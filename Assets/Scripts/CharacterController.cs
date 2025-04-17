@@ -58,6 +58,7 @@ public class CharacterController : MonoBehaviour
 
     private float velocity = 0;
     [SerializeField] private float cameraRotationSpeed= 150;
+    [SerializeField] private CapsuleCollider childCapsule;
 
 
     void Start()
@@ -68,8 +69,10 @@ public class CharacterController : MonoBehaviour
         isGrounded = true;
         previousPosition = transform.position;
 
-        gravity = (-2*jumpHeight)/(timeToPeak*timeToPeak);
-        initialVelocity = (2*jumpHeight)/timeToPeak;
+        
+        if (childCapsule == null) {
+        childCapsule = GetComponentInChildren<CapsuleCollider>();
+    }
     }
 
     void Update()
@@ -77,8 +80,11 @@ public class CharacterController : MonoBehaviour
         Vector3 cameraForward = cameraTransform.forward;
         Vector3 currentPosition = transform.position;
         Vector3 inputVector = new Vector3(0,0,0);
+        gravity = (-2*jumpHeight)/(timeToPeak*timeToPeak);
+        initialVelocity = (2*jumpHeight)/timeToPeak;
 
 
+        
         // Ground detection and falltrough correction
         isGrounded = Physics.Raycast(transform.position, Vector3.down, groundDistance, groundMask);
         if (Physics.Linecast(previousPosition, currentPosition, out RaycastHit hit, groundMask))
@@ -158,6 +164,7 @@ public class CharacterController : MonoBehaviour
 
 
 
+
         // Jump logic
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
@@ -186,7 +193,32 @@ public class CharacterController : MonoBehaviour
         }
 
         
-       
+               Vector3 moveDirection = inputVector;
+    float moveDistance = currentSpeed*Time.deltaTime;
+    /*
+    // Check for collisions before moving
+    if (Physics.CapsuleCast(
+        childCapsule.transform.position + Vector3.up * 0.5f,  // Bottom sphere
+        childCapsule.transform.position - Vector3.up * 0.5f,  // Top sphere
+        childCapsule.GetComponent<CapsuleCollider>().radius,
+        moveDirection,
+        out RaycastHit hitS,
+        moveDistance))
+    {
+        // Calculate slide direction
+        Vector3 slideDirection = Vector3.ProjectOnPlane(moveDirection, hitS.normal);
+        
+        // Try moving along the surface
+        if (slideDirection.magnitude > 0.01f) {
+            transform.position += slideDirection.normalized * moveDistance;
+        }
+    }
+    else {
+        // No collision - normal movement
+        //transform.position += moveDirection * moveDistance;
+        transform.position += inputVector;
+
+    }*/
        // Move Character
         transform.position += inputVector;
         
